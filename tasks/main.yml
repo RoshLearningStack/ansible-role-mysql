@@ -1,0 +1,53 @@
+---
+# tasks file for mysql_db
+
+- name: Install MySQL community repository
+  yum:
+      name: "http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm"
+      state: present
+
+- name: Install MySQL database
+  yum:
+      name: "{{ item }}"
+      state: present
+  with_items:
+      - "mysql-server"
+      - "mysql-devel"
+
+- name: Create MySQL configuration file
+  copy:
+      content: |
+        [client]
+        user=root
+        password="@targ8et"
+      dest: "/etc/.my.cnf"
+
+- name: Start MySQL service
+  service:
+      name: mysqld
+      state: started
+      enabled: yes
+
+- name: Install mysql-python package
+  pip:
+      name: "MySQL-python"
+
+- name: Create application database
+  mysql_db:
+      name: "{{ db_name }}"
+      state: present
+
+- name: Create application database
+  mysql_db:
+      name: "{{ db_name }}"
+      state: present
+
+- name: Create database user
+  mysql_user:
+      name: "{{ db_user }}"
+      password: "{{ db_user_password }}"
+      priv: '*.*:ALL'
+      state: present
+
+- name: Create database table
+  shell: mysql -u'{{ db_user }}' -p'{{ db_user_password }}' -e "use employee_db; create table if not exists employees(name VARCHAR(20));INSERT INTO employees VALUES ('JOHN');"
